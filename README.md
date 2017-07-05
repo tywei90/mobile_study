@@ -22,7 +22,7 @@
 缩放比：scale = 1/dpr
 
 完美视口
-```
+```html
 <meta name="viewport" content="initial-scale=1,width=device-width,user-scalable=0,maximum-scale=1" />
 
 ```
@@ -35,7 +35,7 @@
 * rem + 百分比布局
 
 媒体查询的css代码如下：
-```
+```css
 //网易彩票的响应式布局是采用媒体查询来改变rem值实现的
 //媒体查询css
 #media-query{
@@ -62,7 +62,7 @@
             font-size:15px!important;
         }
     }
-    ...
+    // 省略
 }
 ```
 
@@ -99,7 +99,7 @@
 * 根据设计稿的尺寸（px）分三种情况进行处理，采用px + rem布局
 
 相关的脚本如下：
-```
+```js
 $(document).ready(function(){
     var dpr, rem, scale;
     var docEl = document.documentElement;
