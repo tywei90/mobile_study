@@ -1,0 +1,1357 @@
+@import url(./font-face.css);
+// 		说明：为了更好的还原web设计者当初设计的意图，假设我们从视觉设计者拿过来的psd文件是基于iPhone5即dpr=2，1rem=64px设计
+// 的2x设计稿；其实我们从psd文件只能得到px的值，为了实现弹性布局，需要进行换算。我们在less里边就体现了这个过程。后边如果有
+// 直接给出rem值，是我们人工经过换算之后的。
+// 主要有三种：
+// 1、border 1px：这个不需要转换，不管什么设备都是1px
+// 2、针对会随着设备大小变化而变化的px参数
+.px2rem(@name, @px){
+    @{name}: @px / 64 * 1rem;
+}
+@brem: 64;//方便后面书写
+
+// 3、针对device-independent参数，比如font-size
+// scale缩放和乘以dpr相互抵消，我们看到的大小还是一样的
+.px2px1(@name, @px){
+	    @{name}: (@px / 2) * 1px;
+    [data-dpr="1.3"] & {
+        @{name}: (@px * 1.3 / 2) * 1px; 
+    }
+    [data-dpr="1.4"] & {
+        @{name}: (@px * 1.4 / 2) * 1px;
+    }
+    [data-dpr="1.5"] & {
+    	@{name}: (@px * 1.5 / 2) * 1px;
+    }
+    [data-dpr="2"] & {
+        @{name}: @px * 1px;
+    }
+    // for mx3
+    [data-dpr="2.5"] & {
+        @{name}: (@px * 2.5 / 2) * 1px;
+    }
+    // for 小米note
+    [data-dpr="2.75"] & {
+    	@{name}: (@px * 2.75 / 2) * 1px;
+    }
+    [data-dpr="3"] & {
+		@{name}: (@px * 3 / 2) * 1px;
+    }
+    // for 三星note4
+    [data-dpr="4"] & {
+        @{name}: @px * 2px;
+    }
+}
+//针对background-position: 9px 9px;
+.px2px2(@name, @px1, @px2){
+	    @{name}: (@px1 / 2) * 1px (@px2 / 2) * 1px;
+    [data-dpr="1.3"] & {
+        @{name}: (@px1 * 1.3 / 2) * 1px (@px2 * 1.3 / 2) * 1px; 
+    }
+    [data-dpr="1.4"] & {
+        @{name}: (@px1 * 1.4 / 2) * 1px (@px2 * 1.4 / 2) * 1px;
+    }
+    [data-dpr="1.5"] & {
+    	@{name}: (@px1 * 1.5 / 2) * 1px (@px2* 1.5 / 2) * 1px;
+    }
+    [data-dpr="2"] & {
+        @{name}: @px1 * 1px @px2 * 1px;
+    }
+    // for mx3
+    [data-dpr="2.5"] & {
+        @{name}: (@px1 * 2.5 / 2) * 1px (@px2 * 2.5 / 2) * 1px;
+    }
+    // for 小米note
+    [data-dpr="2.75"] & {
+    	@{name}: (@px1 * 2.75 / 2) * 1px (@px2 * 2.75 / 2) * 1px;
+    }
+    [data-dpr="3"] & {
+		@{name}: (@px1 * 3 / 2) * 1px (@px2 * 3 / 2) * 1px;
+    }
+    // for 三星note4
+    [data-dpr="4"] & {
+        @{name}: @px1 * 2px @px2 * 2px;
+    }
+}
+//非常麻烦，而且针对奇葩的，比如background-position: 9px center 就更不好弄了。。
+//能不能直接获取dpr参数作为全局变量？
+// @media screen and (-webkit-device-pixel-ratio: 1) {
+//     @dpr: 1 !global;只能定义样式，而且不支持这种作用域变换！
+// }
+// @media screen and (-webkit-device-pixel-ratio: 1.3) {
+//     @dpr: 1.3 !global;
+// }
+// @media screen and (-webkit-device-pixel-ratio: 1.4) {
+//     @dpr: 1.4 !global;
+// }
+// @media screen and (-webkit-device-pixel-ratio: 1.5) {
+//     @dpr: 1.5 !global;
+// }
+// @media screen and (-webkit-device-pixel-ratio: 2) {
+//     @dpr: 2 !important;
+// }
+// @media screen and (-webkit-device-pixel-ratio: 2.6) {
+//     @dpr: 2.6 !global;
+// }
+// @media screen and (-webkit-device-pixel-ratio: 3.0) {
+//     @dpr: 3 !global;
+// }
+
+//重大发现：去less官网发现最新的版本支持访问js环境中的变量，这样我们就可以得到全局变量dpr参数了！！
+//不用再去编写.px2px函数，使用更加灵活。如background-position: 9px center;可以写成: background-position: 9px*@dpr center;
+//参见：http://www.1024i.com/demo/less/document.html最后。
+@dpr: `(window.devicePixelRatio || 1)/2`; //iphone5的dpr=2，这里除以2是做归一化处理。
+
+
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input,
+textarea, p, blockquote, th, td, hr, button, article, aside, details, figcaption, figure, footer,
+header, hgroup, menu, nav, section {
+    margin: 0;
+    padding: 0;
+}
+html{
+	width: 100%; 
+	height: 100%; 
+	// overflow: hidden;
+	font-family: sans-serif;
+	overflow:auto;/* winphone8和android4+ */
+	-webkit-overflow-scrolling: touch; /* ios5+ */
+}
+body{
+	left: 0; 
+	top: 0; 
+	width: 100%; 
+	display: block;
+}
+#view-1{
+	display: block;
+	overflow: hidden;
+	background-color: #EEE;
+}
+.scrollview{
+	width: 100%;
+	height: 100%;
+	display: -webkit-flex;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	flex-direction: column;
+}
+//页头
+.m-top-fixed{
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	display: block;
+	header{
+		width: 100%;
+		background-color: #FE5400;
+		.header-wrap{
+			padding-left: 74px*@dpr;
+			.px2px1(padding-top, 12);
+			.px2px1(padding-bottom, 12);
+			.px2px2(background-size, 54, 40);
+			background-position: 9px*@dpr center;
+			width: 100%;
+			box-sizing: border-box;
+			.px2rem(padding-right, 12.8);
+			background-image: url(./image/tao.png);
+			background-repeat: no-repeat;
+			#search-placeholder {
+				.px2px1(border-radius, 8);
+			    width: 100%;
+			    box-sizing: border-box;
+			    background-color: #B52600;
+			    text-align: center;
+			    span{
+			    	.px2px1(height, 50);
+			    	.px2px1(line-height, 50);
+			    	.px2px1(font-size, 26);
+			    	display: inline-block;
+			    	color: #F0E0DC;
+			    	&:before{
+			    		.px2px1(font-size, 30);
+			    		.px2px1(margin-right, 10);
+			    		font-family: 'h5index-iconfont';
+			    		font-style: normal;
+			    		-webkit-font-smoothing: antialiased;
+			    		.px2px1(-webkit-text-stroke-width, 0.2);
+			    		display: inline-block;
+			    		color: #FFF;
+			    		content: '\E600';
+			    	}
+			    }
+			}
+		}
+	}
+}
+//页尾
+.m-bottom-fixed{
+	left: 0px;
+    bottom: 0px;
+    width: 100%;
+    display: block;
+    footer{
+    	.px2px1(padding-top, 8);
+    	.px2px1(height, 76);
+		border-top: 1px solid #E7E7E7;
+	    border-bottom: 1px solid #F8F8F8;
+	    width: 100%;
+	    display: flex;
+	    -webkit-box-pack: justify;
+	    -webkit-box-align: center;
+	    justify-content: space-between;
+	    align-content: center;
+	    background-color: #FFF;
+	    .footer-logo{
+	    	.px2px1(font-size, 20);
+	    	color: #5D656B;
+	    	-webkit-box-flex: 1;
+	    	flex: 1;
+	    	text-align: center;
+	    	box-sizing: border-box;
+	    	display: block;
+	    	text-decoration: none;
+	    	span{
+	    		.px2px1(font-size, 44);
+	    		display: block;
+	    		font-family: 'h5index-iconfont';
+	    		font-style: normal;
+	    		-webkit-font-smoothing: antialiased;
+	    		-webkit-text-stroke-width: 0.2px;
+	    		width: 100%;
+	    		color: #5D656B;
+	    		top: 0;
+	    		left: 0;
+	    	}
+	    }
+    }
+}
+//内容部分外壳
+.m-scroll-wrap{
+	width: 100%;
+	display: block;
+	-webkit-box-flex: 1;
+	flex: 1;
+	overflow: auto;//一定要注意这里不能用hidden，否则内容会被剪裁，手机屏幕下面的内容都没有了，也就不能滚动
+	position: relative;
+	.scroll-content{
+		// transform: translate3d(0px, 0px, 0px);
+		.px2px1(height, 2450);//定义了内容区域的整个高度
+		width: 100%;
+		position: absolute;
+	}
+}
+.force-repaint{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 0px;
+	height: 0px;
+	font-size: 0px;
+	opacity: 1;
+}
+
+//内容核心部分1
+#content{
+	position: relative;
+	width: 10rem;
+	margin: 0 auto;
+	.group1{
+		.tbanner{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.tbanner-child{
+				box-sizing: border-box;
+				line-height: 0;
+				width: 10rem;
+				height: 3.125rem;
+				.slide-banner{
+					height: 100%;
+					width: 10rem;
+					overflow: hidden;
+					position: relative;
+					.carrousel{
+						height: 100%;
+						width: 10rem;
+						// -webkit-animation-name: "loops";
+						// -webkit-animation-duration: 20s;
+						// -webkit-animation-iteration-count: infinite;
+						// transform: translate3d(-196480px, 0px, 0px);
+						position: relative;
+						list-style: none;
+						// @-webkit-keyframes "loops" {
+				        //     0% {
+				        //         background:url(./image/01.jpg) no-repeat;             
+				        //     }
+				        //     25% {
+				        //         background:url(./image/02.jpg) no-repeat;
+				        //     }
+				        //     50% {
+				        //         background:url(./image/03.jpg) no-repeat;
+				        //     }
+				        //     75% {
+				        //         background:url(./image/04.jpg) no-repeat;
+				        //     }
+				        //     100% {
+				        //         background:url(./image/05.jpg) no-repeat;
+				        //     }
+				        // }
+						.card{
+							display: block;
+							width: 10rem;
+							height: 100%;
+							position: absolute;
+							top: 0px;
+							// left: 313600px;
+							float: left;
+							a{
+								display: block;
+								width: 100%;
+								height: 100%;
+								vertical-align: middle;
+								overflow: hidden;
+								text-decoration: none;
+								img{
+									width: 100%;
+									height: 100%;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		.tentrance{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.tentrance-child{
+				box-sizing: border-box;
+				line-height: 0;
+				width: 10rem;
+				height: 4.313rem;
+				background-image: initial;
+				background-attachment: initial;
+				background-origin: initial;
+				background-clip: initial;
+				background-color: rgb(255, 255, 255);
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: normal;
+				flex-direction: column;
+				.horizontal-view{
+					box-sizing: border-box;
+					line-height: 0;
+					width: 10rem;
+					height: 2.031rem;
+					background-image: initial;
+					background-attachment: initial;
+					background-origin: initial;
+					background-clip: initial;
+					background-color: rgb(255, 255, 255);
+					display: flex;
+					-webkit-box-orient: horizontal;
+					-webkit-box-direction: normal;
+					flex-direction: row;
+					.top-ball{
+						box-sizing: border-box;
+						line-height: 0;
+						margin-left: 0.406rem;
+						width: 2rem;
+						height: 2.125rem;
+						background-image: initial;
+						background-attachment: initial;
+						background-origin: initial;
+						background-clip: initial;
+						background-color: rgb(255, 255, 255);
+						position: relative;
+						.top-ball-child{
+							box-sizing: border-box;
+							line-height: 0;
+							width: 2rem;
+							height: 2.125rem;
+							position: absolute;
+							display: flex;
+							-webkit-box-orient: vertical;
+							-webkit-box-direction: normal;
+							flex-direction: column;
+							.ball-pic{
+								box-sizing: border-box;
+								line-height: 0;
+								margin-top: 0.313rem;
+								margin-left: 0.391rem;
+								width: 1.609rem;
+								height: 1.203rem;
+								position: relative;
+								.ball-picl{
+									box-sizing: border-box;
+									line-height: 0;
+									width: 1.203rem;
+									height: 1.203rem;
+									position: absolute;
+									background-size: contain;
+									background-position: 50% 50%;
+									background-repeat: no-repeat;
+								}
+								.ball-pic1{background-image: url(./image/top-ball01.png);}
+								.ball-pic2{background-image: url(./image/top-ball02.png);}
+								.ball-pic3{background-image: url(./image/top-ball03.png);}
+								.ball-pic4{background-image: url(./image/top-ball04.png);}
+								.ball-pic5{background-image: url(./image/top-ball05.png);}
+								.ball-pic6{background-image: url(./image/top-ball06.png);}
+								.ball-pic7{background-image: url(./image/top-ball07.png);}
+								.ball-pic8{background-image: url(./image/top-ball08.png);}
+								.ball-picr{
+									box-sizing: border-box;
+									line-height: 0;
+									margin-left: 0.906rem;
+									width: 0.594rem;
+									height: 0.328rem;
+									background-size: contain;
+									position: absolute;
+									background-position: 50% 50%;
+									background-repeat: no-repeat no-repeat;
+								}
+							}
+							.ball-txt{
+								box-sizing: border-box;
+								text-align: center;
+								.px2px1(font-size, 24);
+								color: rgb(102, 102, 102);
+								width: 2rem;
+								height: 0.594rem;
+								line-height: 0.594rem;
+							}
+						}
+					}
+				}
+			}
+		}
+		.toutiao2{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.vertical-view{
+				box-sizing: border-box;
+				line-height: 0;
+				width: 10rem;
+				height: 0.953rem;
+				background-image: initial;
+				background-attachment: initial;
+				background-origin: initial;
+				background-clip: initial;
+				background-color: rgb(255, 255, 255);
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: normal;
+				flex-direction: column;
+				.UIView{
+					box-sizing: border-box;
+					line-height: 0;
+					background-color: rgb(232, 232, 232);
+					width: 10rem;
+					height: 1px;
+				}
+				.broadcast{
+					box-sizing: border-box;
+					line-height: 0;
+					width: 10rem;
+					height: 0.938rem;
+					position: relative;
+					// transform: translateY(-500%);
+					background-image: initial;
+					background-attachment: initial;
+					background-color: rgb(255, 255, 255);
+					background-origin: initial;
+					background-clip: initial;
+					.horizontal-view{
+						width: 10rem;
+					    padding: 0.09375rem 0px;
+					    height: 0.75rem;
+					    display: flex;
+					    -webkit-box-orient: horizontal;
+					    -webkit-box-direction: normal;
+					    flex-direction: row;
+					    .horizontal-view-child1{
+					    	display: block;
+					    	border-right-width: 1px;
+					    	border-right-style: solid;
+					    	border-right-color: rgb(232, 232, 232);
+					    	width: 2.1875rem;
+					    	height: 100%;
+					    	box-sizing: border-box;
+					    	background: url(./image/toutiao.png) 50% 50%  no-repeat;
+					    	background-size: 1.61719rem 0.46875rem;
+					    }
+					    .horizontal-view-child2{
+					    	display: block;
+					    	margin: 0.125rem 0.15625rem 0.125rem 0.28125rem;
+					    	padding: 0px 0.0625rem;
+					    	height: 0.46875rem;
+					    	line-height: 0.46875rem;
+					    	border: 1px solid rgb(216, 20, 33);
+					    	border-radius: 0.125rem;
+					    	color: rgb(216, 20, 33);
+					    	.px2px1(font-size, 28.125);
+					    	text-align: center;
+					    }
+					    .horizontal-view-child3{
+					    	display: block;
+					    	overflow: hidden;
+					    	margin: 0.125rem 0px;
+					    	height: 0.5rem;
+					    	line-height: 0.5rem;
+					    	color: rgb(53, 53, 53);
+					    	.px2px1(font-size, 30.4688);
+					    	width: 6rem;
+					    }
+					}
+				}
+			}
+		}
+		.gray_border_home{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.gray_border_home_child{
+				box-sizing: border-box;
+			    line-height: 0;
+			    width: 10rem;
+			    height: 0.313rem;
+			    background-image: initial;
+			    background-attachment: initial;
+			    background-origin: initial;
+			    background-clip: initial;
+			    background-color: rgb(238, 238, 238);
+			    position: relative;
+			}
+		}
+		.rushbuy42{
+			position: relative;
+			width: 100%;
+		    overflow: hidden;
+		    .rushbuy42-child{
+		    	box-sizing: border-box;
+		    	line-height: 0;
+		    	width: 10rem;
+		    	height: 4.797rem;
+		    	position: relative;
+		    	.horizontal-view{
+		    		box-sizing: border-box;
+		    		line-height: 0;
+		    		width: 10rem;
+		    		height: 4.797rem;
+		    		background-image: initial;
+		    		background-attachment: initial;
+		    		background-origin: initial;
+		    		background-clip: initial;
+		    		background-color: rgb(255, 255, 255);
+		    		position: absolute;
+		    		display: flex;
+		    		-webkit-box-orient: horizontal;
+		    		-webkit-box-direction: normal;
+		    		flex-direction: row;
+		    		.horizontal-view-child{
+		    			box-sizing: border-box;
+	    			    line-height: 0;
+	    			    width: 4rem;
+	    			    height: 4.797rem;
+	    			    background-image: initial;
+	    			    background-attachment: initial;
+	    			    background-origin: initial;
+	    			    background-clip: initial;
+	    			    background-color: rgb(255, 255, 255);
+	    			    position: relative;
+	        			.horizontal00{
+	        				box-sizing: border-box;
+	        				line-height: 0;
+	        				width: 4rem;
+	        				height: 4.813rem;
+	        				z-index: 1;
+	        				position: absolute;
+	        				background-image: url(./image/rongyao4c.png);
+	        				background-size: contain;
+	        				background-repeat: no-repeat;
+	        			}
+	        			.TBRushBuyCounterLabel{
+	    					box-sizing: border-box;
+	    					line-height: 0;
+	    					margin-top: 1.406rem;
+	    					margin-left: 0.359rem;
+	    					width: 2.781rem;
+	    					height: 0.688rem;
+	    					position: absolute;
+	    					.count-down{
+	    						padding: 0;
+	    						position: absolute;
+	    						z-index: 3;
+	    						.h{
+	    							display: inline-block;
+	    							width: 0.533rem;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							color: #fff;
+	    							background: #333;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    						.dot{
+	    							width: 0.125rem;
+	    							color: #333;
+	    							background: transparent;
+	    							display: inline-block;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    						.m{
+	    							display: inline-block;
+	    							width: 0.533rem;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							color: #fff;
+	    							background: #333;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    						.s{
+	    							display: inline-block;
+	    							width: 0.533rem;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							color: #fff;
+	    							background: #333;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    					}
+	        			}
+		    		}
+		    		.UIView{
+		    			box-sizing: border-box;
+		    			line-height: 0;
+		    			background-color: rgb(232, 232, 232);
+		    			width: 1px;
+		    			height: 4.797rem;
+		    		}
+		    		.vertical-view{
+		    			box-sizing: border-box;
+		    			line-height: 0;
+		    			width: 5.984rem;
+		    			height: 4.797rem;
+		    			display: flex;
+		    			-webkit-box-orient: vertical;
+		    			-webkit-box-direction: normal;
+		    			flex-direction: column;
+		    			.child1{
+		    				box-sizing: border-box;
+		    				line-height: 0;
+		    				width: 5.984rem;
+		    				height: 1.922rem;
+		    				background-image: initial;
+		    				background-attachment: initial;
+		    				background-origin: initial;
+		    				background-clip: initial;
+		    				background-color: rgb(255, 255, 255);
+		    				position: relative;
+		    				.horizontal-view{
+		    					box-sizing: border-box;
+		    					line-height: 0;
+		    					width: 5.984rem;
+		    					height: 1.922rem;
+		    					background-image: initial;
+		    					background-attachment: initial;
+		    					background-origin: initial;
+		    					background-clip: initial;
+		    					background-color: rgb(255, 255, 255);
+		    					position: absolute;
+		    					display: flex;
+		    					-webkit-box-orient: horizontal;
+		    					-webkit-box-direction: normal;
+		    					flex-direction: row;
+		    					.child1{
+		    						box-sizing: border-box;
+		    						line-height: 0;
+		    						width: 3.516rem;
+		    						height: 1.922rem;
+		    						background-image: url(./image/1.png);
+		    						background-size: contain;
+		    						background-position: 50% 50%;
+		    						background-repeat: no-repeat;
+		    					}
+		    					.child2{
+		    						box-sizing: border-box;
+		    						line-height: 0;
+		    						width: 1.922rem;
+		    						height: 1.922rem;
+		    						background-image: url(./image/2.jpg);
+		    						background-size: contain;
+		    						background-position: 50% 50%;
+		    						background-repeat: no-repeat;
+		    					}
+		    				}
+		    				.UIButton{
+		    					box-sizing: border-box;
+	    					    line-height: 0;
+	    					    width: 5.984rem;
+	    					    height: 1.922rem;
+	    					    z-index: 1;
+	    					    position: absolute;
+		    				}
+		    			}
+		    			.child2{
+							box-sizing: border-box;
+							line-height: 0;
+							background-color: rgb(232, 232, 232);
+							width: 5.984rem;
+							height: 1px;
+		    			}
+		    			.child3{
+		    				box-sizing: border-box;
+		    				line-height: 0;
+		    				width: 6rem;
+		    				height: 2.875rem;
+		    				display: flex;
+		    				-webkit-box-orient: horizontal;
+		    				-webkit-box-direction: normal;
+		    				flex-direction: row;
+		    				.child1{
+		    					box-sizing: border-box;
+	    					    line-height: 0;
+	    					    width: 2.969rem;
+	    					    height: 2.875rem;
+	    					    z-index: 1;
+	    					    background-image: url(./image/3.png);
+	    					    background-size: contain;
+	    					    background-repeat: no-repeat;
+		    				}
+		    				.child2{
+		    					box-sizing: border-box;
+		    					line-height: 0;
+		    					background-color: rgb(232, 232, 232);
+		    					width: 1px;
+		    					height: 2.875rem;
+		    				}
+		    				.child3{
+		    					box-sizing: border-box;
+		    					line-height: 0;
+		    					width: 2.969rem;
+		    					height: 2.875rem;
+		    					z-index: 1;
+		    					background-image: url(./image/4.png);
+		    					background-size: contain;
+		    					background-repeat: no-repeat;
+		    				}
+		    			}
+		    		}
+		    	}
+		    }
+		}
+		.tcheap3{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.vertical-view{
+				box-sizing: border-box;
+				line-height: 0;
+				width: 10rem;
+				height: 7.281rem;
+				background-image: initial;
+				background-attachment: initial;
+				background-origin: initial;
+				background-clip: initial;
+				background-color: rgba(255, 255, 255, 0);
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: normal;
+				flex-direction: column;
+				.part1{
+					box-sizing: border-box;
+					line-height: 0;
+					width: 10rem;
+					height: 0.953rem;
+					background-image: initial;
+					background-attachment: initial;
+					background-origin: initial;
+					background-clip: initial;
+					background-color: rgba(255, 255, 255, 0);
+					display: flex;
+					-webkit-box-orient: horizontal;
+					-webkit-box-direction: normal;
+					flex-direction: row;
+					.UIView1{
+						box-sizing: border-box;
+						line-height: 0;
+						background-color: rgb(204, 204, 204);
+						margin-top: 0.484rem;
+						margin-left: 0.156rem;
+						margin-right: 0.156rem;
+						width: 3.813rem;
+						height: 1px;
+					}
+					.part11{
+						box-sizing: border-box;
+						line-height: 0;
+						margin-top: 0.219rem;
+						width: 0.531rem;
+						height: 0.531rem;
+						background-image: url(./image/5.png);
+						background-size: contain;
+						background-position: 50% 50%;
+						background-repeat: no-repeat;
+					}
+					.part12{
+						box-sizing: border-box;
+						text-align: center;
+						.px2px1(font-size, 28);
+						color: rgb(252, 28, 7);
+						margin-right: 0.047rem;
+						width: 1.328rem;
+						height: 0.953rem;
+						line-height: 0.953rem;
+						background-color: transparent;
+					}
+					.UIView2{
+						box-sizing: border-box;
+						line-height: 0;
+						background-color: rgb(204, 204, 204);
+						margin-top: 0.484rem;
+						margin-right: 0.156rem;
+						width: 3.813rem;
+						height: 1px;
+					}
+				}
+				.part2{
+					box-sizing: border-box;
+				    line-height: 0;
+				    width: 10rem;
+				    height: 3.141rem;
+				    background-image: initial;
+				    background-attachment: initial;
+				    background-origin: initial;
+				    background-clip: initial;
+				    background-color: rgb(255, 255, 255);
+				    display: flex;
+				    -webkit-box-orient: horizontal;
+				    -webkit-box-direction: normal;
+				    flex-direction: row;
+				    .child1{
+				    	box-sizing: border-box;
+				    	line-height: 0;
+				    	width: 4rem;
+				    	height: 3.141rem;
+				    	z-index: 1;
+				    	background-image: url(./image/6.png);
+				    	background-color: transparent;
+				    	background-size: contain;
+				    	background-repeat: no-repeat;
+				    	}
+			    	.UIView{
+						box-sizing: border-box;
+						line-height: 0;
+						background-color: rgb(232, 232, 232);
+						width: 1px;
+						height: 3.141rem;
+			    	}
+			    	.child{
+			    		box-sizing: border-box;
+			    		line-height: 0;
+			    		width: 1.984rem;
+			    		height: 3.141rem;
+			    		z-index: 1;
+			    		background-size: contain;
+			    		background-repeat: no-repeat;
+			    	}
+			    	.bg1{ background-image: url(./image/7.png) }
+			    	.bg2{ background-image: url(./image/8.png) }
+			    	.bg3{ background-image: url(./image/9.png) }
+				}
+				.UIView1{
+					box-sizing: border-box;
+					line-height: 0;
+					background-color: rgb(232, 232, 232);
+					width: 10rem;
+					height: 1px;
+				}
+				.part3{
+					box-sizing: border-box;
+				    line-height: 0;
+				    width: 10rem;
+				    height: 3.141rem;
+				    background-image: initial;
+				    background-attachment: initial;
+				    background-origin: initial;
+				    background-clip: initial;
+				    background-color: rgb(255, 255, 255);
+				    display: flex;
+				    -webkit-box-orient: horizontal;
+				    -webkit-box-direction: normal;
+				    flex-direction: row;
+				    .child1{
+				    	box-sizing: border-box;
+				    	line-height: 0;
+				    	width: 4rem;
+				    	height: 3.141rem;
+				    	z-index: 1;
+				    	background-image: url(./image/10.png);
+				    	background-color: transparent;
+				    	background-size: contain;
+				    	background-repeat: no-repeat;
+				    	}
+			    	.UIView{
+						box-sizing: border-box;
+						line-height: 0;
+						background-color: rgb(232, 232, 232);
+						width: 1px;
+						height: 3.141rem;
+			    	}
+			    	.child{
+			    		box-sizing: border-box;
+			    		line-height: 0;
+			    		width: 1.984rem;
+			    		height: 3.141rem;
+			    		z-index: 1;
+			    		background-size: contain;
+			    		background-repeat: no-repeat;
+			    	}
+			    	.bg1{ background-image: url(./image/11.png) }
+			    	.bg2{ background-image: url(./image/12.png) }
+			    	.bg3{ background-image: url(./image/13.png) }
+				}
+				.UIView2{
+					box-sizing: border-box;
+					line-height: 0;
+					background-color: rgb(217, 217, 217);
+					width: 10rem;
+					height: 1px;
+				}
+				.UIView2{
+					box-sizing: border-box;
+					line-height: 0;
+					background-color: rgb(224, 224, 224);
+					width: 10rem;
+					height: 1px;
+				}
+			}
+		}
+		.tquality3{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.vertical-view{
+				box-sizing: border-box;
+				line-height: 0;
+				width: 10rem;
+				height: 5.75rem;
+				background-image: initial;
+				background-attachment: initial;
+				background-origin: initial;
+				background-clip: initial;
+				background-color: rgba(255, 255, 255, 0);
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: normal;
+				flex-direction: column;
+				.part1{
+					box-sizing: border-box;
+					line-height: 0;
+					width: 10rem;
+					height: 0.953rem;
+					background-image: initial;
+					background-attachment: initial;
+					background-origin: initial;
+					background-clip: initial;
+					background-color: rgba(255, 255, 255, 0);
+					display: flex;
+					-webkit-box-orient: horizontal;
+					-webkit-box-direction: normal;
+					flex-direction: row;
+					.UIView1{
+						box-sizing: border-box;
+						line-height: 0;
+						background-color: rgb(204, 204, 204);
+						margin-top: 0.484rem;
+						margin-left: 0.156rem;
+						margin-right: 0.156rem;
+						width: 3.813rem;
+						height: 1px;
+					}
+					.part1{
+						box-sizing: border-box;
+						line-height: 0;
+						margin-top: 0.219rem;
+						width: 0.531rem;
+						height: 0.531rem;
+						background-image: url(./image/14.png);
+						background-size: contain;
+						background-position: 50% 50%;
+						background-repeat: no-repeat;
+					}
+					.part2{
+						box-sizing: border-box;
+						text-align: center;
+						.px2px1(font-size, 28);
+						color: rgb(106, 41, 164);
+						margin-right: 0.047rem;
+						width: 1.328rem;
+						height: 0.953rem;
+						line-height: 0.953rem;
+						background-color: transparent;
+					}
+					.UIView2{
+						box-sizing: border-box;
+						line-height: 0;
+						background-color: rgb(204, 204, 204);
+						margin-top: 0.484rem;
+						margin-right: 0.156rem;
+						width: 3.813rem;
+						height: 1px;
+					}
+				}
+		    	.horizontal-view{
+		    		box-sizing: border-box;
+		    		line-height: 0;
+		    		width: 10rem;
+		    		height: 4.797rem;
+		    		background-image: initial;
+		    		background-attachment: initial;
+		    		background-origin: initial;
+		    		background-clip: initial;
+		    		background-color: rgb(255, 255, 255);
+		    		position: absolute;
+		    		display: flex;
+		    		-webkit-box-orient: horizontal;
+		    		-webkit-box-direction: normal;
+		    		flex-direction: row;
+		    		.horizontal-view-child{
+		    			box-sizing: border-box;
+	    			    line-height: 0;
+	    			    width: 4rem;
+	    			    height: 4.797rem;
+	    			    background-image: initial;
+	    			    background-attachment: initial;
+	    			    background-origin: initial;
+	    			    background-clip: initial;
+	    			    background-color: rgb(255, 255, 255);
+	    			    position: relative;
+	        			.horizontal00{
+	        				box-sizing: border-box;
+	        				line-height: 0;
+	        				width: 4rem;
+	        				height: 4.813rem;
+	        				z-index: 1;
+	        				position: absolute;
+	        				background-image: url(./image/rongyao4c.png);
+	        				background-size: contain;
+	        				background-repeat: no-repeat;
+	        			}
+	        			.TBRushBuyCounterLabel{
+	    					box-sizing: border-box;
+	    					line-height: 0;
+	    					margin-top: 1.406rem;
+	    					margin-left: 0.359rem;
+	    					width: 2.781rem;
+	    					height: 0.688rem;
+	    					position: absolute;
+	    					.count-down{
+	    						padding: 0;
+	    						position: absolute;
+	    						z-index: 3;
+	    						.h{
+	    							display: inline-block;
+	    							width: 0.533rem;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							color: #fff;
+	    							background: #333;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    						.dot{
+	    							width: 0.125rem;
+	    							color: #333;
+	    							background: transparent;
+	    							display: inline-block;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    						.m{
+	    							display: inline-block;
+	    							width: 0.533rem;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							color: #fff;
+	    							background: #333;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    						.s{
+	    							display: inline-block;
+	    							width: 0.533rem;
+	    							height: 0.533rem;
+	    							line-height: 0.533rem;
+	    							vertical-align: middle;
+	    							margin: 0 0.03125rem;
+	    							color: #fff;
+	    							background: #333;
+	    							text-align: center;
+	    							font-size: 0.3125rem;
+	    							border-radius: 0.02667rem;
+	    						}
+	    					}
+	        			}
+		    		}
+		    		.UIView{
+		    			box-sizing: border-box;
+		    			line-height: 0;
+		    			background-color: rgb(232, 232, 232);
+		    			width: 1px;
+		    			height: 4.797rem;
+		    		}
+		    		.vertical-view{
+		    			box-sizing: border-box;
+		    			line-height: 0;
+		    			width: 5.984rem;
+		    			height: 4.797rem;
+		    			display: flex;
+		    			-webkit-box-orient: vertical;
+		    			-webkit-box-direction: normal;
+		    			flex-direction: column;
+		    			.child1{
+		    				box-sizing: border-box;
+		    				line-height: 0;
+		    				width: 5.984rem;
+		    				height: 1.922rem;
+		    				background-image: initial;
+		    				background-attachment: initial;
+		    				background-origin: initial;
+		    				background-clip: initial;
+		    				background-color: rgb(255, 255, 255);
+		    				position: relative;
+		    				.horizontal-view{
+		    					box-sizing: border-box;
+		    					line-height: 0;
+		    					width: 5.984rem;
+		    					height: 1.922rem;
+		    					background-image: initial;
+		    					background-attachment: initial;
+		    					background-origin: initial;
+		    					background-clip: initial;
+		    					background-color: rgb(255, 255, 255);
+		    					position: absolute;
+		    					display: flex;
+		    					-webkit-box-orient: horizontal;
+		    					-webkit-box-direction: normal;
+		    					flex-direction: row;
+		    					.child1{
+		    						box-sizing: border-box;
+		    						line-height: 0;
+		    						width: 3.516rem;
+		    						height: 1.922rem;
+		    						background-image: url(./image/1.png);
+		    						background-size: contain;
+		    						background-position: 50% 50%;
+		    						background-repeat: no-repeat;
+		    					}
+		    					.child2{
+		    						box-sizing: border-box;
+		    						line-height: 0;
+		    						width: 1.922rem;
+		    						height: 1.922rem;
+		    						background-image: url(./image/2.jpg);
+		    						background-size: contain;
+		    						background-position: 50% 50%;
+		    						background-repeat: no-repeat;
+		    					}
+		    				}
+		    				.UIButton{
+		    					box-sizing: border-box;
+	    					    line-height: 0;
+	    					    width: 5.984rem;
+	    					    height: 1.922rem;
+	    					    z-index: 1;
+	    					    position: absolute;
+		    				}
+		    			}
+		    			.child2{
+							box-sizing: border-box;
+							line-height: 0;
+							background-color: rgb(232, 232, 232);
+							width: 5.984rem;
+							height: 1px;
+		    			}
+		    			.child3{
+		    				box-sizing: border-box;
+		    				line-height: 0;
+		    				width: 6rem;
+		    				height: 2.875rem;
+		    				display: flex;
+		    				-webkit-box-orient: horizontal;
+		    				-webkit-box-direction: normal;
+		    				flex-direction: row;
+		    				.child1{
+		    					box-sizing: border-box;
+	    					    line-height: 0;
+	    					    width: 2.969rem;
+	    					    height: 2.875rem;
+	    					    z-index: 1;
+	    					    background-image: url(./image/3.png);
+	    					    background-size: contain;
+	    					    background-repeat: no-repeat;
+		    				}
+		    				.child2{
+		    					box-sizing: border-box;
+		    					line-height: 0;
+		    					background-color: rgb(232, 232, 232);
+		    					width: 1px;
+		    					height: 2.875rem;
+		    				}
+		    				.child3{
+		    					box-sizing: border-box;
+		    					line-height: 0;
+		    					width: 2.969rem;
+		    					height: 2.875rem;
+		    					z-index: 1;
+		    					background-image: url(./image/4.png);
+		    					background-size: contain;
+		    					background-repeat: no-repeat;
+		    				}
+		    			}
+		    		}
+		    	}
+			}	
+		}
+		#change{
+			.vertical-view .part1{
+				.part11{background-image: url(./image/15.png);}
+				.part12{color: rgb(220, 156, 8);}
+			}
+			.part2{
+				.bg1{ background-image: url(./image/16.png) }
+				.bg2{ background-image: url(./image/17.png) }
+				.bg3{ background-image: url(./image/18.png) }
+			}
+			.part3{
+				.bg1{ background-image: url(./image/19.png) }
+				.bg2{ background-image: url(./image/20.png) }
+				.bg3{ background-image: url(./image/21.png) }
+			}
+		}
+	}
+	.group2{
+		.titemtop{
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			.horizontal-view{
+				box-sizing: border-box;
+				line-height: 0;
+				width: 10rem;
+				height: 0.906rem;
+				padding: 0.46875rem 0.25rem;
+				display: flex;
+				-webkit-box-pack: center;
+				-webkit-box-align: center;
+				justify-content: center;
+				align-content: center;
+				// background: url() repeat-x 0 center;
+				background-size: 1px;
+				-webkit-box-orient: horizontal;
+				-webkit-box-direction: normal;
+				flex-direction: row;
+				span{
+					display: block;
+					height: 0.4375rem;
+					padding: 0 0.48rem 0 0.75rem;
+					background-color: #eee;
+					color: #5f646e;
+				}
+			}
+		}
+	}
+}
+#guessitem{
+}
+#pagebottom{
+	.child{
+		box-sizing: border-box;
+		width: 100%;
+		border-top: 1px solid #292c33;
+		background-image: url(./image/22.png);
+		background-repeat: no-repeat;
+		background-position: center 3.4375rem;
+		background-size: 4.25rem 1.125rem;
+		background-color: #4e525e;
+		padding: 0.5625rem 0.25rem;
+		.buttons{
+			width: 100%;
+			display: -webkit-box;
+			display: -moz-box;
+			display: -ms-flexbox;
+			display: flex;
+			-webkit-box-pack: justify;
+			-moz-box-pack: justify;
+			-ms-flex-pack: justify;
+			justify-content: space-between;
+			a {
+				.px2px1(border-radius, 12);
+				.px2px1(font-size, 28);
+				display: block;
+				height: 0.9375rem;
+				line-height: 0.9375rem;
+				color: #c3c6ca;
+				border: 2px solid #42454d;
+				background-color: #555965;
+				padding: 0 0.46875rem;
+				text-decoration: none;
+			}
+		}
+		.copyright {
+			width: 100%;
+			margin-top: 0.5625rem;
+			height: 0.5625rem;
+			line-height: 0.5625rem;
+			padding-left: 3.03125rem;
+			box-sizing: border-box;
+			background-image: url(./image/23.png);
+			background-repeat: no-repeat;
+			background-position: 2.3125rem center;
+			background-size: 0.53125rem 0.53125rem;
+			color: #c3c6ca;
+			a{
+				text-decoration: none;
+			}
+		}
+	}
+}
+
+
+
+
+
