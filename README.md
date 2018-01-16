@@ -155,11 +155,10 @@ $(document).ready(function(){
 * 淘宝的方案几乎解决了移动端遇到的所有问题，堪称完美的解决方案，但是开发效率低、成本比较高。
 
 ## 参考文献
-1. http://www.cnblogs.com/2050/p/3877280.html
-2. http://f2e.souche.com/blog/yi-dong-duan-zi-gua-ying-fang-an/
-3. http://www.html-js.com/article/Mobile-terminal-H5-mobile-terminal-HD-multi-screen-adaptation-scheme%203041
-4. http://my.oschina.net/kenblog/blog/373341?fromerr=OQeOo5fR
-5. http://www.1024i.com/demo/less/document.html
+1. [移动前端开发之viewport的深入理解](http://www.cnblogs.com/2050/p/3877280.html)
+2. [【原创】移动端高清、多屏适配方案](http://www.html-js.com/article/Mobile-terminal-H5-mobile-terminal-HD-multi-screen-adaptation-scheme%203041)
+3. [wap手机端页面根据dpr和宽度计算出font-size对应数值](http://my.oschina.net/kenblog/blog/373341?fromerr=OQeOo5fR)
+5. [less语法](http://www.1024i.com/demo/less/document.html)
 
 
 
