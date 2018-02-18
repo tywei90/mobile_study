@@ -1,5 +1,5 @@
 # 移动端布局方案探究
-初入移动端，照着淘宝，天猫和网易彩票163的wap主页学习做的demo，主要是排版  
+研究了淘宝，天猫和网易彩票163的wap主页样式布局，总结移动端布局方案
 *注意：代码运行是file协议，在chrome里不支持引用本地文件，会提示跨域错误，可以用firefox或者Safari打开*
 
 当时做的ppt下载: [2015年12月移动端布局方案探究](https://raw.githubusercontent.com/tywei90/mobile_study/master/assets/mobile_study.ppt)
